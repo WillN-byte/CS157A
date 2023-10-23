@@ -22,6 +22,8 @@ import java.util.ArrayList;
 import java.io.BufferedReader;
 import java.io.FileReader;
 import java.io.IOException;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 public class ModifiedSynthesis {
 
@@ -48,6 +50,13 @@ public class ModifiedSynthesis {
     static HashSet<Integer> numsFromLeftSide;
     static HashSet<Integer> numsFromRightSide;
 
+    // Regular expression intended for table column names
+    static String REGEX = "[\\d,]+";
+    // Use Pattern and Matcher to find instances where column names fail naming
+    // rules
+    static Pattern pat;
+    static Matcher match;
+
     public static void main(String args[]) {
         // Split each line by semicolon
         // Get left hand side and right hand sideic void main (String[] args){
@@ -69,10 +78,13 @@ public class ModifiedSynthesis {
         leftSide = new ArrayList<HashSet<Integer>>();
         rightSide = new ArrayList<HashSet<Integer>>();
 
-        // Read in line by line in the file
+        // Create a Pattern object for this specified REGEX
+        pat = Pattern.compile(REGEX);
 
+        // Read in line by line in the file
         try {
             BufferedReader in = new BufferedReader(new FileReader(txtFile));
+
             for (String line = in.readLine(); line != null; line = in.readLine()) {
                 items = line.trim().split(";");
 
@@ -82,6 +94,15 @@ public class ModifiedSynthesis {
 
                 numsFromLeftSide = new HashSet<Integer>();
                 numsFromRightSide = new HashSet<Integer>();
+
+                // Create Matcher object in each iteration (for each column name)
+                for (String item : items) {
+                    match = pat.matcher(item);
+                    // if string do not conform to the format
+                    if (!match.matches()) {
+                        endProgram();
+                    }
+                }
 
                 lhs = items[0].split(","); // Left hand side
                 for (String num : lhs) {
