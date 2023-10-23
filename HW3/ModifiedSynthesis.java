@@ -1,79 +1,86 @@
 /*
-Algorithm3.26: Synthesis of Third-Normal-Form Relations W ith a Lossless Join and Dependency Preservation.
-
-INPUT: A relation R and a set F of functional dependencies that hold for R.
-
-OUTPUT: A decomposition of R into a collection of relations, each of which is
-in 3NF. The decomposition has the lossless-join and dependency-preservation
-properties.
-
-METHOD: Perform the following steps:
-1. Find a minimal basis for F, say G.
-2. Partition the the functional dependencies in G according to their left hand sides (so two dependencies X→A and X→B with the same left hand sides will be in the same partition). Merge each partition into a single FD using the combining rule (so X→A and X→B would become X→AB). For each rule X→Y that results from merging the rules of a partition, use XY as the schema of one of the relations in the decomposition. 
-3. If none of the relation schemas from Step 2 is a superkey for R, add another relation whose schema is a key for R.
-4. If the set of the attributes of one table in the decomposition is a subset of the attributes of a different output table it should be deleted from the decomposition.
-*/
-
-package HW3;
+ * Algorithm 3.26: Synthesis of Third-Normal-Form Relations 
+ *                  With a Lossless Join and Dependency Preservation.
+ *
+ * INPUT: A relation R and a set F of functional dependencies that hold for R.
+ *
+ * OUTPUT: A decomposition of R into a collection of relations, each of which is
+ * in 3NF. The decomposition has the lossless-join and dependency-preservation
+ * properties.
+ *
+ * METHOD: Perform the following steps:
+ * 1. Find a minimal basis for F, say G.
+ * 2. Partition the the functional dependencies in G according to their left hand sides 
+ *    (so two dependencies X→A and X→B with the same left hand sides will be in the same partition). 
+ *    Merge each partition into a single FD using the combining rule (so X→A and X→B would become X→AB). 
+ *    For each rule X→Y that results from merging the rules of a partition, use XY as the schema of one of the relations in the decomposition. 
+ * 3. If none of the relation schemas from Step 2 is a superkey for R, add another relation whose schema is a key for R.
+ * 4. If the set of the attributes of one table in the decomposition is a subset of the attributes of a different output table
+ *    it should be deleted from the decomposition.
+ */
 
 import java.util.Arrays;
-import java.util.HashSet;
 import java.util.ArrayList;
 import java.io.BufferedReader;
 import java.io.FileReader;
+import java.util.HashSet;
 import java.io.IOException;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+/**
+ * The ModifiedSynthesis class is 
+ * created to carry out the synthesis
+ * of Third Normal Form Relations 
+ * that have both the lossless join
+ * and dependency presevation properties.
+ */
+
 public class ModifiedSynthesis {
 
     // an array containing left hand side
-    // and right hand side of a functional dependency
+    // and right hand side of a functional dependency (FD)
     static String[] items;
-    // an array of string elements in left hand side
+    // an array of string numbers found 
+    // in left hand side of functional dependency (FD)
     static String[] lhs;
-    // an array of string elements in right hand side
+    // an array of string numbers found
+    // in right hand side of functional dependency (FD)
     static String[] rhs;
 
-    // iArrayList of sets of numbers for left hand sides
-    // ArrayList of sets of numbers for right hand sidednahsets // set contains
-    // unique attributes in left hand sideth
-    // set contains unique attributes in right hand sidegir ni stnntem static
-    // ArrayList<HashSet<Integer>> leftSide;
-    static ArrayList<HashSet<Integer>> rightSide;
+    // ArrayList of sets of numbers for left hand side
+    // set contains unique attributes in left hand side
     static ArrayList<HashSet<Integer>> leftSide;
-
-    // will
-    // Initialize array listscontain all unique attributes in our relation
+    // ArrayList of sets of numbers for right hand side 
+    // set contains unique attributes in right hand side
+    static ArrayList<HashSet<Integer>> rightSide;
+    
+    // Set that contains all unique attributes in our relation
     static HashSet<Integer> num;
 
+    // Set that contains unique attributes in left hand side
     static HashSet<Integer> numsFromLeftSide;
+    // Set that contains unique attributes in right hand side
     static HashSet<Integer> numsFromRightSide;
 
-    // Regular expression intended for table column names
+    // Regular expression intended for 
+    // left hand side/right hand side of FD
     static String REGEX = "[\\d,]+";
-    // Use Pattern and Matcher to find instances where column names fail naming
-    // rules
+    // Use Pattern and Matcher to find strings that match the specified regular expression
     static Pattern pat;
     static Matcher match;
 
     public static void main(String args[]) {
-        // Split each line by semicolon
-        // Get left hand side and right hand sideic void main (String[] args){
 
-        // Check that we get exactly one arguement to the command
+        // Check that we get exactly one argument to the command on terminal
         if (args.length < 1 || args.length > 1) {
             endProgram();
         }
-        String txtFile = args[0];// Initialize set for numbersxtFile = args[0];
+        // Save textfile name
+        String txtFile = args[0];
 
-        // Split left hand side by comma try {
 
-        // For each numerical string in left hand side// Create reader object suitable
-        // for reading a text
-        // file line by line
-
-        // Split right hand side by comma leftSide = new ArrayList<HashSet<Integer>>();
+        // Initialize predefined variables above main method
         num = new HashSet<Integer>();
         leftSide = new ArrayList<HashSet<Integer>>();
         rightSide = new ArrayList<HashSet<Integer>>();
@@ -81,22 +88,29 @@ public class ModifiedSynthesis {
         // Create a Pattern object for this specified REGEX
         pat = Pattern.compile(REGEX);
 
-        // Read in line by line in the file
+        
         try {
+            // Create a Buffered Reader for reading textfile
             BufferedReader in = new BufferedReader(new FileReader(txtFile));
 
+            // Read in line by line in the textfile
             for (String line = in.readLine(); line != null; line = in.readLine()) {
+                // Split each line by semicolon
+                // Capture left hand side and right hand side
                 items = line.trim().split(";");
 
+                // Check that we have exactly two strings in items array
                 if (items.length != 2) {
                     endProgram();
                 }
 
+                // Initialize predefined variables for use
                 numsFromLeftSide = new HashSet<Integer>();
                 numsFromRightSide = new HashSet<Integer>();
 
-                // Create Matcher object in each iteration (for each column name)
+                // Create Matcher object in each iteration
                 for (String item : items) {
+                    // Match pattern with string in item
                     match = pat.matcher(item);
                     // if string do not conform to the format
                     if (!match.matches()) {
@@ -104,24 +118,32 @@ public class ModifiedSynthesis {
                     }
                 }
 
-                lhs = items[0].split(","); // Left hand side
+                // Split left hand side by comma if there is comma
+                lhs = items[0].split(","); 
                 for (String num : lhs) {
+                    // Add number into LHS set
                     numsFromLeftSide.add(Integer.valueOf(num));
                 }
 
-                rhs = items[1].split(","); // Right hand side
+                // Split right hand side by comma if there is comma
+                rhs = items[1].split(",");
                 for (String num : rhs) {
+                    // Add number into RHS set
                     numsFromRightSide.add(Integer.valueOf(num));
                 }
 
+                // Add LHS set to LHS array list
                 leftSide.add(numsFromLeftSide);
+                // Add RHS set to RHS array list
                 rightSide.add(numsFromRightSide);
             }
 
+            // Add each set from LHS to the num set
             for (HashSet<Integer> s : leftSide) {
                 num.addAll(s);
             }
 
+            // Add each set from RHS to the num set
             for (HashSet<Integer> s : rightSide) {
                 num.addAll(s);
             }
@@ -131,15 +153,14 @@ public class ModifiedSynthesis {
         }
 
         // finding out the size of the initial relation
-
-        // find minimal basis given smt
-        // returns minimal size
         int numAttributes = num.size();
         // successfully created inital relations
 
         // Checking for the number of attributes
         // System.out.println("Size of set: " + numAttributes);
 
+        // find minimal basis given smt
+        // returns minimal size
         FindMinBasis();
 
         partitionMergeFDs();
