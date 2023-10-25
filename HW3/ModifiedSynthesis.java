@@ -159,24 +159,41 @@ public class ModifiedSynthesis {
         // Checking for the number of attributes
         // System.out.println("Size of set: " + numAttributes);
 
-        // find minimal basis given smt
-        // returns minimal size
-        FindMinBasis();
-
-        partitionMergeFDs();
-
         HashSet<Integer> initRelation = new HashSet<Integer>();
         for (int i = 1; i <= numAttributes; i++) {
             initRelation.add(i);
         }
 
+        ArrayList<HashSet<Integer>> relations = new ArrayList<HashSet<Integer>>();
+        relations.add(initRelation);
+
         // checks if relation is in 3NF
-        ArrayList<HashSet<Integer>> relations = makesRInto3NF(initRelation);
+        if (notInNF(initRelation)) {
+            // find minimal basis given smt
+            // returns minimal size
+            FindMinBasis();
+
+            partitionMergeFDs();
+
+            relations = makesRInto3NF(relations);
+        }
 
         // check that no tables are subtables of other tables
 
         // print out the relations
         printRelations(relations);
+    }
+
+    // checks if relation is in 3NF or not
+    private static boolean notInNF(HashSet<Integer> initRelation) {
+        for (int i = 0; i < leftSide.size(); i++) {
+            if (FindClosure(leftSide.get(i)).size() != num.size()) {
+                if (true) {
+                    return true;
+                }
+            }
+        }
+        return false;
     }
 
     /**
@@ -314,8 +331,12 @@ public class ModifiedSynthesis {
         ArrayList<HashSet<Integer>> minLeftSide = new ArrayList<HashSet<Integer>>();
         ArrayList<HashSet<Integer>> minRightSide = new ArrayList<HashSet<Integer>>();
 
-        // for all FD's
+        // makes sure all fds ahave singleton right sides
+        applySplittingRule();
+
+        // check if all the fds are actually needed
         for (int i = 0; i < leftSide.size(); i++) {
+
             // find elements that can directly be found with that FD
             HashSet<Integer> union = new HashSet<Integer>();
             union.addAll(leftSide.get(i));
@@ -332,6 +353,47 @@ public class ModifiedSynthesis {
         }
         leftSide = minLeftSide;
         rightSide = minRightSide;
+
+        // makes sure all elements on leftSide are needed
+        checksForUnnecessaryElements();
+    }
+
+    // makes sure all elements on leftSide are needed
+    private static void checksForUnnecessaryElements() {
+        // check if all the fds are actually needed
+        for (int i = 0; i < leftSide.size(); i++) {
+            if (leftSide.get(i).size() > 1) {
+                for (Integer j : leftSide.get(i)) {
+                    HashSet<Integer> withE = FindClosure(leftSide.get(i));
+                    HashSet<Integer> difference = new HashSet<Integer>(leftSide.get(i));
+                    difference.remove(j);
+                    HashSet<Integer> withoutE = new HashSet<Integer>(difference);
+                    if (withoutE.containsAll(withE)) {
+                        leftSide.set(i, difference);
+                    }
+                }
+            }
+        }
+    }
+
+    // applies the splitting rule to all input fds
+    private static void applySplittingRule() {
+        int fdCount = leftSide.size();
+        ArrayList<Integer> indexToBeDeleted = new ArrayList<Integer>();
+        for (int i = 0; i < fdCount; i++) {
+            if (rightSide.get(i).size() > 1) {
+                for (Integer j : rightSide.get(i)) {
+                    leftSide.add(leftSide.get(i));
+                    rightSide.add(new HashSet<>(j));
+                    indexToBeDeleted.add(i);
+                }
+            }
+        }
+        // delete split fd from greatest index to least to avoid index errors
+        for (int i = indexToBeDeleted.size() - 1; i >= 0; i--) {
+            leftSide.remove((int) indexToBeDeleted.get(i));
+            rightSide.remove((int) indexToBeDeleted.get(i));
+        }
     }
 
     // for any set of attributes, this function returns its closure
