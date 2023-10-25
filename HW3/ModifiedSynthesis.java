@@ -183,7 +183,7 @@ public class ModifiedSynthesis {
             partitionMergeFDs();
 
             // Decompose the initial relation
-            relations = makesRInto3NF(relations);
+            relations = makesRInto3NF();
         }
 
         // Print out the decomposed relations
@@ -257,7 +257,7 @@ public class ModifiedSynthesis {
      * @param initRelation the initial relation
      * @return output the array list of set of attributes
      */ 
-    private static ArrayList<HashSet<Integer>> makesRInto3NF(ArrayList<HashSet<Integer>> initRelation) {
+    private static ArrayList<HashSet<Integer>> makesRInto3NF() {
         
         // Create output array list that contains newly-formed relations
         ArrayList<HashSet<Integer>> output = new ArrayList<HashSet<Integer>>();
@@ -392,8 +392,11 @@ public class ModifiedSynthesis {
     }
 
     /**
-     * The hasSuperKey method
-     * 
+     * The hasSuperKey method is created to find
+     * the super key using the given functional
+     * dependencies available in the text file.
+     * @param output array list of sets of attributes
+     * @return set of attributes (superkey)
      */ 
     public static HashSet<Integer> hasSuperKey(ArrayList<HashSet<Integer>> output) {
         // Check if the closure contains all the attributes in the relation
