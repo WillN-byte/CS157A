@@ -280,6 +280,11 @@ public class ModifiedSynthesis {
             // add attributes from RHS of the ith relation
             insert.addAll(copyRightSide.get(i));
 
+            //If the current right hand side does contain only prime, skip to the next RHS
+            if(!checkRHSForPrime(copyLeftSide.get(i), copyRightSide.get(i))){
+                continue;
+            }
+
             // for each set in output list
             for (HashSet<Integer> set : output) { 
                 // if any of these sets contain the currently-formed set
@@ -318,7 +323,31 @@ public class ModifiedSynthesis {
             output.add(checkForKey);
         }
 
+
         return output;
+    }
+
+
+    /**
+     * The checkRHSForPrime function checks if the RHS of a non-trivial FD contains a prime attribute
+     * which is an attribute that is part of the candidate key.
+     * @param lhs left hand side of FD
+     * @param rhs right hand side of FD
+     * @return true if RHS has prime attribute, false otherwise
+     */ 
+    public static boolean checkRHSForPrime(HashSet<Integer> lhs, HashSet<Integer> rhs){
+        //Get the closure of the LHS of the FD
+        HashSet<Integer> candidateKey = FindClosure(lhs);
+        // Iterate through the attributes in the RHS
+        for (Integer attribute : rhs) {
+            // Check if the attribute is contained in the candidate key
+            if (!candidateKey.contains(attribute)) {
+                // If the attribute on the RHS is part of the candidate key, the 
+                return false;
+            }
+        }
+    // If all attributes in the RHS are prime attributes, return true
+    return true;
     }
 
     /**
