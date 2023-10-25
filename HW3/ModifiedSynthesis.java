@@ -223,9 +223,8 @@ public class ModifiedSynthesis {
         }
     }
 
-    private static ArrayList<HashSet<Integer>> makesRInto3NF(HashSet<Integer> initRelation) {
-        ArrayList<HashSet<Integer>> output = new ArrayList<HashSet<Integer>>();
-        output.add(initRelation);
+    private static ArrayList<HashSet<Integer>> makesRInto3NF(ArrayList<HashSet<Integer>> initRelation) {
+        ArrayList<HashSet<Integer>> output = new ArrayList<HashSet<Integer>>(initRelation);
 
         for (int i = 0; i < leftSide.size(); i++) {
             HashSet<Integer> insert = new HashSet<Integer>();
