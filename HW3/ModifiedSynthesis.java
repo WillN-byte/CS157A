@@ -173,7 +173,7 @@ public class ModifiedSynthesis {
 
         // Check if the initial relation is in 3NF
         // If initial relation is not in 3NF
-        if (notInNF(initRelation)) {
+        if (notIn3NF(initRelation)) {
             // find minimal basis that gives all attributes
             // returns minimal size
             FindMinBasis();
@@ -194,12 +194,12 @@ public class ModifiedSynthesis {
     }
 
     /**
-     * The notInNF method determines whether
+     * The notIn3NF method determines whether
      * the given relation is in 3NF or not
      * @param initRelation a relation given as argument
      * @return true if relation is not in 3NF; otherwise, false
      */ 
-    private static boolean notInNF(HashSet<Integer> initRelation) {
+    private static boolean notIn3NF(HashSet<Integer> initRelation) {
         // For each FD
         for (int i = 0; i < leftSide.size(); i++) {
             // Execute closure algorithm
@@ -250,9 +250,13 @@ public class ModifiedSynthesis {
     }
 
     /**
-     * The makesRInto3NF method takes an 
-     * initial relation and 
-     * 
+     * The makesRInto3NF method adds
+     * attributes found from LHS and RHS
+     * of each functional dependency. It
+     * also saves the key that is found 
+     * among those functional dependencies.
+     * @param initRelation the initial relation
+     * @return output the array list of set of attributes
      */ 
     private static ArrayList<HashSet<Integer>> makesRInto3NF(ArrayList<HashSet<Integer>> initRelation) {
         // Copy the initial relation
@@ -264,19 +268,23 @@ public class ModifiedSynthesis {
             HashSet<Integer> insert = new HashSet<Integer>();
             // add attributes from LHS of the ith FD 
             insert.addAll(leftSide.get(i));
-            // sadd attributes from RHS of the ith FD
+            // add attributes from RHS of the ith FD
             insert.addAll(rightSide.get(i));
+            // add the newly formed set into list 
             output.add(insert);
         }
+        // Remove the initial set stored at zeroth index
         output.remove(0);
 
+        // Check if LHS of any FD is a superkey
         HashSet<Integer> checkForKey = hasSuperKey(output);
+        // if a key is found (we do not run into null value)
         if (checkForKey != null) {
+            // add that set of attributes (key)
             output.add(checkForKey);
         }
 
         return output;
-
     }
 
     /**
@@ -292,15 +300,18 @@ public class ModifiedSynthesis {
     }
 
     /*
-     * Check if any singleton left side attributes match
-     * If any matches are found, add the left side and right sides of each FD to
-     * partitions
-     * 
+     * The partitionMergeFDs checks if any singleton from
+     * left hand side of FD matches.
+     * If any matches are found, add the left hand side and
+     * right hand sides of each FD to
+     * the same partition.
      */
     public static void partitionMergeFDs() {
         // first FD
+        // start at index i
         for (int i = 0; i < leftSide.size() - 1; i++) {
             // second FD
+            // start at the next index i + 1
             for (int j = i + 1; j < leftSide.size(); j++) {
 
                 // if first FD share the same elements as second FD
@@ -315,9 +326,12 @@ public class ModifiedSynthesis {
                 }
             }
         }
-
     }
 
+    /**
+     * The hasSuperKey method
+     * 
+     */ 
     public static HashSet<Integer> hasSuperKey(ArrayList<HashSet<Integer>> output) {
         // Check if the closure contains all the attributes in the relation
         // The number of unique attributes is found from num.size()
@@ -361,7 +375,9 @@ public class ModifiedSynthesis {
         return null;
     }
 
-    // find minimal basis for given input Fd's
+    /**
+     * The FindMinBasis method
+     */ 
     public static void FindMinBasis() {
         ArrayList<HashSet<Integer>> minLeftSide = new ArrayList<HashSet<Integer>>();
         ArrayList<HashSet<Integer>> minRightSide = new ArrayList<HashSet<Integer>>();
@@ -393,7 +409,9 @@ public class ModifiedSynthesis {
         checksForUnnecessaryElements();
     }
 
-    // makes sure all elements on leftSide are needed
+    /**
+     * The checksForUnnecessaryElements method
+     */ 
     private static void checksForUnnecessaryElements() {
         // check if all the fds are actually needed
         for (int i = 0; i < leftSide.size(); i++) {
@@ -411,7 +429,9 @@ public class ModifiedSynthesis {
         }
     }
 
-    // applies the splitting rule to all input fds
+    /**
+     * The applySplittingRule method
+     */ 
     private static void applySplittingRule() {
         int fdCount = leftSide.size();
         ArrayList<Integer> indexToBeDeleted = new ArrayList<Integer>();
@@ -431,29 +451,9 @@ public class ModifiedSynthesis {
         }
     }
 
-    // for any set of attributes, this function returns its closure
-    public static HashSet<Integer> FindClosure(HashSet<Integer> leftAtt, Integer index) {
-        // closure = x (leftAtt), olcClosure = empty set
-        HashSet<Integer> closure = new HashSet<Integer>(leftAtt);
-        HashSet<Integer> oldClosure = new HashSet<Integer>();
-        // while x_old != x
-        while (closure.size() != oldClosure.size()) {
-            // set x_old to x
-            oldClosure = new HashSet<Integer>(closure);
-
-            // for each FD,
-            for (int i = 0; i < leftSide.size(); i++) {
-                // check whether the LHS attributes are in closure, but RHS attributes are not
-                if ((i != index) && closure.containsAll(leftSide.get(i))) {
-                    // Add RHS attributes into closure
-                    closure.addAll(rightSide.get(i));
-                }
-            }
-        }
-        return closure;
-    }
-
-    // for any set of attributes, this function returns its closure
+    /**
+     * The FindClosure method
+     */ 
     public static HashSet<Integer> FindClosure(HashSet<Integer> leftAtt) {
         // closure = x (leftAtt), olcClosure = empty set
         HashSet<Integer> closure = new HashSet<Integer>(leftAtt);
@@ -475,4 +475,27 @@ public class ModifiedSynthesis {
         return closure;
     }
 
+    /**
+     * The FindClosure method
+     */ 
+    public static HashSet<Integer> FindClosure(HashSet<Integer> leftAtt, Integer index) {
+        // closure = x (leftAtt), olcClosure = empty set
+        HashSet<Integer> closure = new HashSet<Integer>(leftAtt);
+        HashSet<Integer> oldClosure = new HashSet<Integer>();
+        // while x_old != x
+        while (closure.size() != oldClosure.size()) {
+            // set x_old to x
+            oldClosure = new HashSet<Integer>(closure);
+
+            // for each FD,
+            for (int i = 0; i < leftSide.size(); i++) {
+                // check whether the LHS attributes are in closure, but RHS attributes are not
+                if ((i != index) && closure.containsAll(leftSide.get(i))) {
+                    // Add RHS attributes into closure
+                    closure.addAll(rightSide.get(i));
+                }
+            }
+        }
+        return closure;
+    }
 }
