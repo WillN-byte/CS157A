@@ -186,8 +186,6 @@ public class ModifiedSynthesis {
             relations = makesRInto3NF(relations);
         }
 
-        // check that no tables are subtables of other tables
-
         // Print out the decomposed relations
         // or if initial relation is already in 3NF, print it out
         printRelations(relations);
@@ -252,30 +250,66 @@ public class ModifiedSynthesis {
     /**
      * The makesRInto3NF method adds
      * attributes found from LHS and RHS
-     * of each functional dependency. It
-     * also saves the key that is found 
-     * among those functional dependencies.
+     * to form a relation.
+     * It also saves the key that is found 
+     * among the functional dependencies 
+     * as a relation, if appropriate.
      * @param initRelation the initial relation
      * @return output the array list of set of attributes
      */ 
     private static ArrayList<HashSet<Integer>> makesRInto3NF(ArrayList<HashSet<Integer>> initRelation) {
-        // Copy the initial relation
-        ArrayList<HashSet<Integer>> output = new ArrayList<HashSet<Integer>>(initRelation);
+        
+        // Create output array list that contains newly-formed relations
+        ArrayList<HashSet<Integer>> output = new ArrayList<HashSet<Integer>>();
 
-        // for each function dependency
-        for (int i = 0; i < leftSide.size(); i++) {
+        // Create a copy of leftSide array list
+        ArrayList<HashSet<Integer>> copyLeftSide = new ArrayList<HashSet<Integer>>(leftSide);
+        // Create a copy of rightSide array list
+        ArrayList<HashSet<Integer>> copyRightSide = new ArrayList<HashSet<Integer>>(rightSide);
+
+        // for each set in the leftSide
+        for (int i = 0; i < copyLeftSide.size(); i++) {
+            // boolean flag to detect a relation is a subrelation
+            boolean subrel = false;
+
             // create a set to store attributes
             HashSet<Integer> insert = new HashSet<Integer>();
-            // add attributes from LHS of the ith FD 
-            insert.addAll(leftSide.get(i));
-            // add attributes from RHS of the ith FD
-            insert.addAll(rightSide.get(i));
-            // add the newly formed set into list 
+
+            // add attributes from LHS of the ith relation
+            insert.addAll(copyLeftSide.get(i));
+            // add attributes from RHS of the ith relation
+            insert.addAll(copyRightSide.get(i));
+
+            // for each set in output list
+            for (HashSet<Integer> set : output) { 
+                // if any of these sets contain the currently-formed set
+                if (set.containsAll(insert)) {
+                    // set subrel flag to be true
+                    subrel = true;
+                    // end for loop
+                    break;
+                }
+            }
+
+            // if a subrelation is found
+            if (subrel) {
+                // since we do not add the newly-formed relation
+                // we also want to remove the corresponding 
+                // attributes in leftSide and rightSide
+                // so we avoid out-of-bounds error when 
+                // method hasSuperKey() is executed
+                leftSide.remove(i);
+                rightSide.remove(i);
+                // continue for loop without adding 
+                // subrelation to the output list
+                continue;
+            }
+
+            // if relation is not a subrelation
+            // add the newly-formed set into list 
             output.add(insert);
         }
-        // Remove the initial set stored at zeroth index
-        output.remove(0);
-
+        
         // Check if LHS of any FD is a superkey
         HashSet<Integer> checkForKey = hasSuperKey(output);
         // if a key is found (we do not run into null value)
