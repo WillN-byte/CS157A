@@ -159,45 +159,69 @@ public class ModifiedSynthesis {
         // Checking for the number of attributes
         // System.out.println("Size of set: " + numAttributes);
 
+        // Create a set representing the initial relation
         HashSet<Integer> initRelation = new HashSet<Integer>();
+        // Populate the initRelation set 
         for (int i = 1; i <= numAttributes; i++) {
             initRelation.add(i);
         }
 
+        // Create an array list that will store the decomposed relations
         ArrayList<HashSet<Integer>> relations = new ArrayList<HashSet<Integer>>();
+        // Initially, this array list contains the starting relation
         relations.add(initRelation);
 
-        // checks if relation is in 3NF
+        // Check if the initial relation is in 3NF
+        // If initial relation is not in 3NF
         if (notInNF(initRelation)) {
-            // find minimal basis given smt
+            // find minimal basis that gives all attributes
             // returns minimal size
             FindMinBasis();
 
+            // Revoke method to partition the FDs
+            // and merge FDs in the same partition together
             partitionMergeFDs();
 
+            // Decompose the initial relation
             relations = makesRInto3NF(relations);
         }
 
         // check that no tables are subtables of other tables
 
-        // print out the relations
+        // Print out the decomposed relations
+        // or if initial relation is already in 3NF, print it out
         printRelations(relations);
     }
 
-    // checks if relation is in 3NF or not
+    /**
+     * The notInNF method determines whether
+     * the given relation is in 3NF or not
+     * @param initRelation a relation given as argument
+     * @return true if relation is not in 3NF; otherwise, false
+     */ 
     private static boolean notInNF(HashSet<Integer> initRelation) {
+        // For each FD
         for (int i = 0; i < leftSide.size(); i++) {
+            // Execute closure algorithm
+            // Check if the LHS attributes 
+            // will get all attributes in relation using FDs
             if (FindClosure(leftSide.get(i)).size() != num.size()) {
-                if (true) {
-                    return true;
-                }
+                // if LHS attributes do not give all atributes
+                // return true for not being in 3NF
+                return true;
             }
         }
+        // return false after checking the LHS attributes of each FD
         return false;
     }
 
     /**
-     * relations
+     * The printRelations method displays
+     * the provided relations line by line.
+     * Each line (relation) is comprised of integers
+     * representing relation attributes.
+     * Integers are delimited by comma.
+     * @param relations array list of sets of integers
      */
     private static void printRelations(ArrayList<HashSet<Integer>> relations) {
         // Iterate through each relation
@@ -214,7 +238,9 @@ public class ModifiedSynthesis {
             // Display numbers one by one, separated by comma
             for (int pos = 0; pos < nums.length; pos++) {
                 System.out.print(nums[pos]);
+                // if we have not reached the last number yet
                 if (pos != nums.length - 1) {
+                    // print out comma after the number
                     System.out.print(",");
                 }
             }
@@ -223,12 +249,22 @@ public class ModifiedSynthesis {
         }
     }
 
+    /**
+     * The makesRInto3NF method takes an 
+     * initial relation and 
+     * 
+     */ 
     private static ArrayList<HashSet<Integer>> makesRInto3NF(ArrayList<HashSet<Integer>> initRelation) {
+        // Copy the initial relation
         ArrayList<HashSet<Integer>> output = new ArrayList<HashSet<Integer>>(initRelation);
 
+        // for each function dependency
         for (int i = 0; i < leftSide.size(); i++) {
+            // create a set to store attributes
             HashSet<Integer> insert = new HashSet<Integer>();
+            // add attributes from LHS of the ith FD 
             insert.addAll(leftSide.get(i));
+            // sadd attributes from RHS of the ith FD
             insert.addAll(rightSide.get(i));
             output.add(insert);
         }
@@ -246,9 +282,9 @@ public class ModifiedSynthesis {
     /**
      * The endProgram method displays a message
      * to the user in cases where
-     * the text file is not given
+     * the text file is not given on command line
      * or the text file is in wrong format.
-     * Then it ends the program in these scenarios.
+     * The method ends the program in these scenarios.
      */
     public static void endProgram() {
         System.out.println("ERROR!");
